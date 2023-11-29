@@ -2,20 +2,19 @@ defmodule Servy.BearController do
 
   alias Servy.Wildthings
   alias Servy.Bear
-  def index(conv) do
-    items =
-      Wildthings.list_bears
-        |> Enum.filter(&Bear.is_grizzly?/1)
-        |> Enum.sort(&Bear.order_asc_by_name/2)
-        |> Enum.map(&bear_item/1)
-        |>Enum.join
 
-    %{ conv | status: 200, resp_body: "<ul> #{items}</ul>" }
+  import Servy.View, only: [render: 3]
+
+  def index(conv) do
+    bears =
+      Wildthings.list_bears
+        |> Enum.sort(&Bear.order_asc_by_name/2)
+
+    render(conv, "index.eex", bears: bears)
   end
 
   def show(conv, %{ "id" => id}) do
-    bear = Wildthings.get_bear(id)
-    %{ conv | status: 200, resp_body:  "<h1>Bear #{bear.id}: #{bear.name}<\h1>" }
+    render(conv, "show.eex", bear: Wildthings.get_bear(id))
   end
 
   def create(conv, %{"name" => name, "type" => type}) do
@@ -24,9 +23,5 @@ defmodule Servy.BearController do
 
   def delete(conv, _params) do
     %{ conv | status: 403, resp_body: "Bears must never be deleted!"}
-  end
-
-  defp bear_item(bear) do
-    "<li>#{bear.name} - #{bear.type}</li>"
   end
 end
