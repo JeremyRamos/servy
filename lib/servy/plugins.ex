@@ -1,11 +1,5 @@
 defmodule Servy.Plugins do
   alias Servy.Conv
-  def emojify(%Conv{status: 200 } = conv) do
-    %{ conv | resp_body: "🎉 " <> conv.resp_body <> " 🎉"}
-  end
-
-  def emojify(%Conv{} = conv), do: conv
-
   def track(%Conv{status: 404 , path: path} = conv) do
     IO.puts "#{path} is loose!"
     conv
