@@ -4,7 +4,9 @@ defmodule Servy.Handler do
 
   alias Servy.Conv
   alias Servy.BearController
-  alias Servy.VideoCam
+  alias Servy.PledgeController
+  alias Servy.SensorServer
+  alias Servy.FourOhFourCounter
 
   @pages_path Path.expand("../../pages", __DIR__)
 
@@ -50,14 +52,34 @@ defmodule Servy.Handler do
       |> handle_file(conv)
   end
 
-  def route(%Conv{ method: "GET", path: "/snapshots" } = conv) do
-    snapshot1 = VideoCam.get_snapshot("cam-1")
-    snapshot2 = VideoCam.get_snapshot("cam-2")
-    snapshot3 = VideoCam.get_snapshot("cam-3")
+  def route(%Conv{method: "POST", path: "/pledges"} = conv) do
+    PledgeController.create(conv, conv.params)
+  end
 
-    snapshots = [snapshot1, snapshot2, snapshot3]
+  def route(%Conv{method: "GET", path: "/pledges"} = conv) do
+    PledgeController.index(conv)
+  end
 
-    %{ conv | status: 200, resp_body: inspect snapshots}
+  def route(%Conv{ method: "GET", path: "/sensors" } = conv) do
+    sensor_data = SensorServer.get_sensor_data()
+
+    %{ conv | status: 200, resp_body: inspect sensor_data }
+  end
+
+  def route(%Conv{method: "GET", path: "/404s"} = conv) do
+    counts = FourOhFourCounter.get_counts()
+
+    %{ conv | status: 200, resp_body: inspect counts }
+  end
+
+  def route(%Conv{ method: "GET", path: "/kaboom" }) do
+    raise "Kaboom!"
+  end
+
+  def route(%Conv{ method: "GET", path: "/hibernate/" <> time } = conv) do
+    time |> String.to_integer |> :timer.sleep
+
+    %{ conv | status: 200, resp_body: "Awake!" }
   end
 
   def route(%Conv{ path: path } = conv) do
