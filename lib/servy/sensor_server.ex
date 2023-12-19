@@ -42,7 +42,7 @@ defmodule Servy.SensorServer do
     sensor_data = run_tasks_to_get_sensor_data()
     new_state = %{ state | sensor_data: sensor_data}
 
-    schedule_refresh(state.fresh_interval)
+    schedule_refresh(state.refresh_interval)
     {:noreply, new_state}
   end
 
